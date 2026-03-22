@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI Report — Week of {{ week_iso }}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 32px; }
+
+  /* Header */
+  .report-header {
+    text-align: center;
+    padding: 48px 0 36px;
+    border-bottom: 1px solid #21262d;
+    margin-bottom: 40px;
+  }
+  .report-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .report-header .subtitle {
+    color: #8b949e;
+    font-size: 14px;
+  }
+  .report-header .week-badge {
+    display: inline-block;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: #58a6ff;
+    margin-top: 12px;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 48px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #21262d;
+  }
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .section-subheader {
+    margin: 32px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #161b22;
+  }
+  .section-subheader h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .competitor-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge-klaviyo { background: rgba(255, 107, 0, 0.15); color: #FF6B00; border: 1px solid rgba(255, 107, 0, 0.3); }
+  .badge-hubspot { background: rgba(255, 122, 89, 0.15); color: #FF7A59; border: 1px solid rgba(255, 122, 89, 0.3); }
+  .badge-threat-high { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.3); }
+  .badge-threat-medium { background: rgba(210, 153, 34, 0.15); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.3); }
+  .badge-threat-low { background: rgba(139, 148, 158, 0.15); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.3); }
+
+  /* Exec summary pill */
+  .exec-summary {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #c9d1d9;
+  }
+  .exec-summary strong { color: #ffffff; }
+
+  /* Key Metrics dashboard */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .metric-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .metric-card .metric-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 6px 0 4px;
+  }
+  .metric-card .metric-label {
+    font-size: 10px;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .metric-card .metric-sub {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 4px;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 8px;
+  }
+  .card p, .card li {
+    font-size: 13px;
+    color: #8b949e;
+    line-height: 1.6;
+  }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 4px; }
+
+  /* Full-width card */
+  .card-full {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .card-full h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+  .card-full p {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.7;
+  }
+  .card-full ul { padding-left: 16px; margin-top: 8px; }
+  .card-full li { font-size: 13px; color: #c9d1d9; line-height: 1.7; margin-bottom: 4px; }
+
+  /* Deep-dive section card with left accent border */
+  .deep-dive {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-left: 3px solid #30363d;
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .deep-dive.accent-analytics { border-left-color: #a371f7; }
+  .deep-dive.accent-omnichannel { border-left-color: #58a6ff; }
+  .deep-dive.accent-email { border-left-color: #3fb950; }
+  .deep-dive.accent-risk { border-left-color: #f85149; }
+  .deep-dive h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .deep-dive p, .deep-dive li {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.7;
+  }
+  .deep-dive ul { padding-left: 16px; margin-top: 6px; }
+  .deep-dive li { margin-bottom: 4px; }
+  .deep-dive .field-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .deep-dive .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b949e;
+    min-width: 160px;
+    flex-shrink: 0;
+  }
+  .deep-dive .field-value {
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+  .competitive-advantage {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(163, 113, 247, 0.08);
+    border: 1px solid rgba(163, 113, 247, 0.2);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+  .competitive-advantage strong { color: #a371f7; }
+
+  /* Start/Stop/Continue table */
+  .ssc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .ssc-col {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .ssc-col h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+  .ssc-start h4 { color: #3fb950; }
+  .ssc-stop h4 { color: #f85149; }
+  .ssc-continue h4 { color: #58a6ff; }
+  .ssc-col li {
+    font-size: 13px;
+    color: #8b949e;
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .ssc-col ul { padding-left: 16px; }
+
+  /* Sentiment dashboard */
+  .sentiment-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .sentiment-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .sentiment-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 8px 0;
+  }
+  .sentiment-label {
+    font-size: 12px;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .delta-up { color: #3fb950; }
+  .delta-down { color: #f85149; }
+  .delta-flat { color: #8b949e; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, #1a1040, #161b22);
+    border: 1px solid #a371f7;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .highlight-box h3 {
+    color: #a371f7;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .highlight-box p, .highlight-box li {
+    color: #c9d1d9;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .highlight-box ul { padding-left: 16px; }
+  .highlight-box li { margin-bottom: 4px; }
+
+  /* Opportunity section */
+  .opportunity-box {
+    background: linear-gradient(135deg, #0d2818, #161b22);
+    border: 1px solid #238636;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .opportunity-box h3 {
+    color: #3fb950;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .opportunity-box li {
+    color: #c9d1d9;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .opportunity-box ul { padding-left: 16px; }
+
+  /* Risk Assessment box */
+  .risk-box {
+    background: linear-gradient(135deg, #2d1215, #161b22);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .risk-box h3 {
+    color: #f85149;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .risk-box p {
+    color: #c9d1d9;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  /* Risk Matrix */
+  .risk-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .risk-col {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .risk-col h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+  .risk-high h4 { color: #f85149; }
+  .risk-medium h4 { color: #d29922; }
+  .risk-low h4 { color: #3fb950; }
+  .risk-col li {
+    font-size: 13px;
+    color: #8b949e;
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .risk-col ul { padding-left: 16px; }
+
+  /* Executive brief */
+  .exec-brief {
+    background: linear-gradient(135deg, #0d1925, #161b22);
+    border: 1px solid #1f6feb;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+  }
+  .exec-brief h3 {
+    color: #58a6ff;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .exec-brief p {
+    color: #c9d1d9;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-line;
+  }
+
+  /* Landscape card */
+  .landscape-card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .landscape-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .landscape-card .icon { font-size: 16px; }
+  .landscape-card p, .landscape-card li {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.7;
+  }
+  .landscape-card ul { padding-left: 16px; margin-top: 8px; }
+  .landscape-card li { margin-bottom: 4px; }
+  .landscape-card .kv-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .landscape-card .kv-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b949e;
+    min-width: 180px;
+  }
+  .landscape-card .kv-value {
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+
+  /* Churn signals */
+  .churn-signals {
+    background: linear-gradient(135deg, #2d1a00, #161b22);
+    border: 1px solid rgba(210, 153, 34, 0.4);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .churn-signals h3 {
+    color: #d29922;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .churn-signals li {
+    color: #c9d1d9;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  .churn-signals ul { padding-left: 16px; }
+
+  /* 90-day priorities */
+  .priorities-list {
+    background: linear-gradient(135deg, #0d2818, #161b22);
+    border: 1px solid #238636;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .priorities-list h3 {
+    color: #3fb950;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .priorities-list ol {
+    padding-left: 20px;
+    counter-reset: priority;
+  }
+  .priorities-list li {
+    color: #c9d1d9;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  /* Significance / impact badges inline */
+  .badge-inline {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-sig-high { background: rgba(248, 81, 73, 0.15); color: #f85149; }
+  .badge-sig-medium { background: rgba(210, 153, 34, 0.15); color: #d29922; }
+  .badge-sig-low { background: rgba(139, 148, 158, 0.15); color: #8b949e; }
+
+  /* Footer */
+  .report-footer {
+    text-align: center;
+    padding: 36px 0;
+    margin-top: 48px;
+    border-top: 1px solid #21262d;
+    color: #484f58;
+    font-size: 12px;
+  }
+
+  /* Print / PDF */
+  @media print {
+    body { background: #0d1117; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .container { padding: 20px; }
+    .page-break { page-break-before: always; }
+  }
+  @media (max-width: 768px) {
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .card-grid, .ssc-grid, .risk-matrix { grid-template-columns: 1fr; }
+    .card-grid-3 { grid-template-columns: 1fr; }
+    .sentiment-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="report-header">
+    <h1>Competitive Intelligence Report</h1>
+    <div class="subtitle">Mailchimp R&amp;A Intelligence &middot; Klaviyo + HubSpot</div>
+    <div class="week-badge">{{ week_iso }} &middot; {{ today }}</div>
+  </div>
+
+  <!-- ===== PER-COMPETITOR SECTIONS ===== -->
+  {% for comp_key, brief in briefs.items() %}
+  {% set accent_class = 'badge-klaviyo' if 'klaviyo' in comp_key.lower() else 'badge-hubspot' %}
+  {% set accent_color = '#FF6B00' if 'klaviyo' in comp_key.lower() else '#FF7A59' %}
+
+  {% if not loop.first %}<div class="page-break"></div>{% endif %}
+
+  <div class="section-header">
+    <span class="competitor-badge {{ accent_class }}">{{ brief.get('competitor', comp_key) }}</span>
+    <h2>Product Intelligence</h2>
+  </div>
+
+  <!-- Exec Summary -->
+  <div class="exec-summary">
+    <strong>Executive Summary:</strong> {{ brief.get('exec_summary', 'No summary available.') }}
+  </div>
+
+  <!-- Key Metrics Dashboard -->
+  {% set km = brief.get('key_metrics', {}) %}
+  {% if km %}
+  <div class="section-subheader"><h3>Key Metrics</h3></div>
+  <div class="metrics-grid">
+    <div class="metric-card" style="border-top: 3px solid {{ accent_color }};">
+      <div class="metric-label">Est. ARR</div>
+      <div class="metric-value">{{ km.get('estimated_arr', 'N/A') }}</div>
+    </div>
+    <div class="metric-card" style="border-top: 3px solid {{ accent_color }};">
+      <div class="metric-label">Customers</div>
+      <div class="metric-value">{{ km.get('customer_count', 'N/A') }}</div>
+    </div>
+    <div class="metric-card" style="border-top: 3px solid {{ accent_color }};">
+      <div class="metric-label">Market Position</div>
+      <div class="metric-value" style="font-size:16px;">{{ km.get('market_position', 'N/A') }}</div>
+    </div>
+    <div class="metric-card" style="border-top: 3px solid {{ accent_color }};">
+      <div class="metric-label">Pricing Range</div>
+      <div class="metric-value" style="font-size:16px;">{{ km.get('pricing_range', 'N/A') }}</div>
+    </div>
+    <div class="metric-card" style="border-top: 3px solid {{ accent_color }};">
+      <div class="metric-label">YoY Growth</div>
+      <div class="metric-value">{{ km.get('yoy_growth', 'N/A') }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- New Launches & Announcements -->
+  {% if brief.get('new_launches') %}
+  <div class="card-full">
+    <h3>New Launches &amp; Announcements</h3>
+    <div class="card-grid">
+      {% for launch in brief.get('new_launches', []) %}
+      <div class="card">
+        <h4>
+          {{ launch.get('name', 'Unknown') }}
+          {% if launch.get('threat_level_to_mailchimp') %}
+          <span class="badge-inline badge-threat-{{ launch.get('threat_level_to_mailchimp', 'low').lower() }}">{{ launch.get('threat_level_to_mailchimp', '') }}</span>
+          {% endif %}
+        </h4>
+        <p>{{ launch.get('description', '') }}</p>
+        <p style="margin-top:8px; color:{{ accent_color }};">ICP: {{ launch.get('target_icp', 'N/A') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Feature Updates -->
+  {% if brief.get('feature_updates') %}
+  <div class="card-full">
+    <h3>Feature Updates</h3>
+    <ul>
+      {% for update in brief.get('feature_updates', []) %}
+      <li>
+        <strong>{{ update.get('feature', '') }}:</strong> {{ update.get('change', '') }}
+        {% if update.get('significance') %}
+          <span class="badge-inline badge-sig-{{ update.get('significance', 'low').lower() }}">{{ update.get('significance', '') }}</span>
+        {% endif %}
+        {% if update.get('impact_on_mailchimp') %}
+          — <em style="color:#8b949e;">{{ update.get('impact_on_mailchimp', '') }}</em>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Value Prop & ICP -->
+  <div class="card-grid">
+    <div class="card">
+      <h4>Core Value Proposition</h4>
+      <p>{{ brief.get('core_value_prop', 'N/A') }}</p>
+    </div>
+    <div class="card">
+      <h4>ICP Targeting</h4>
+      {% set icp = brief.get('icp_targeting', {}) %}
+      {% if icp.get('doubling_down') %}
+      <p style="color:#3fb950; margin-bottom:4px;">Doubling down: {{ icp.get('doubling_down', []) | join(', ') }}</p>
+      {% endif %}
+      {% if icp.get('steady') %}
+      <p style="color:#58a6ff; margin-bottom:4px;">Steady: {{ icp.get('steady', []) | join(', ') }}</p>
+      {% endif %}
+      {% if icp.get('loosening') %}
+      <p style="color:#f85149;">Loosening: {{ icp.get('loosening', []) | join(', ') }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Trajectory -->
+  <div class="card-full">
+    <h3>6-Month Trajectory</h3>
+    <p>{{ brief.get('trajectory_6mo', 'No trajectory data available.') }}</p>
+  </div>
+
+  <!-- Earnings -->
+  {% if brief.get('earnings_investor_notes') %}
+  <div class="card-full">
+    <h3>Earnings &amp; Investor Notes</h3>
+    <p>{{ brief.get('earnings_investor_notes') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- ===== ANALYTICS & REPORTING DEEP DIVE ===== -->
+  {% set ar = brief.get('analytics_reporting', {}) %}
+  {% if ar %}
+  <div class="section-subheader"><h3><span style="color:#a371f7;">Analytics &amp; Reporting</span></h3></div>
+  <div class="deep-dive accent-analytics">
+    <h4>Capabilities &amp; Landscape</h4>
+    {% if ar.get('current_capabilities') %}
+    <div class="field-row"><span class="field-label">Current Capabilities</span><span class="field-value">{{ ar.get('current_capabilities') }}</span></div>
+    {% endif %}
+    {% if ar.get('recent_changes') %}
+    <div class="field-row"><span class="field-label">Recent Changes</span><span class="field-value">{{ ar.get('recent_changes') }}</span></div>
+    {% endif %}
+    {% if ar.get('known_gaps') %}
+    <div class="field-row"><span class="field-label">Known Gaps</span><span class="field-value">{{ ar.get('known_gaps') }}</span></div>
+    {% endif %}
+    {% if ar.get('data_accuracy_reputation') %}
+    <div class="field-row"><span class="field-label">Data Accuracy Reputation</span><span class="field-value">{{ ar.get('data_accuracy_reputation') }}</span></div>
+    {% endif %}
+    {% if ar.get('attribution_model') %}
+    <div class="field-row"><span class="field-label">Attribution Model</span><span class="field-value">{{ ar.get('attribution_model') }}</span></div>
+    {% endif %}
+    {% if ar.get('custom_reporting') %}
+    <div class="field-row"><span class="field-label">Custom Reporting</span><span class="field-value">{{ ar.get('custom_reporting') }}</span></div>
+    {% endif %}
+    {% if ar.get('real_time_vs_batch') %}
+    <div class="field-row"><span class="field-label">Real-time vs Batch</span><span class="field-value">{{ ar.get('real_time_vs_batch') }}</span></div>
+    {% endif %}
+    {% if ar.get('competitive_advantage_vs_mailchimp') %}
+    <div class="competitive-advantage"><strong>vs Mailchimp:</strong> {{ ar.get('competitive_advantage_vs_mailchimp') }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ===== OMNICHANNEL DEEP DIVE ===== -->
+  {% set oc = brief.get('omnichannel', {}) %}
+  {% if oc %}
+  <div class="section-subheader"><h3><span style="color:#58a6ff;">Omnichannel</span></h3></div>
+  <div class="deep-dive accent-omnichannel">
+    <h4>Cross-Channel Capabilities</h4>
+    {% if oc.get('channels_supported') %}
+    <div class="field-row"><span class="field-label">Channels Supported</span><span class="field-value">{{ oc.get('channels_supported') }}</span></div>
+    {% endif %}
+    {% if oc.get('cross_channel_capabilities') %}
+    <div class="field-row"><span class="field-label">Cross-Channel</span><span class="field-value">{{ oc.get('cross_channel_capabilities') }}</span></div>
+    {% endif %}
+    {% if oc.get('recent_channel_additions') %}
+    <div class="field-row"><span class="field-label">Recent Additions</span><span class="field-value">{{ oc.get('recent_channel_additions') }}</span></div>
+    {% endif %}
+    {% if oc.get('cdp_capabilities') %}
+    <div class="field-row"><span class="field-label">CDP Capabilities</span><span class="field-value">{{ oc.get('cdp_capabilities') }}</span></div>
+    {% endif %}
+    {% if oc.get('competitive_advantage_vs_mailchimp') %}
+    <div class="competitive-advantage"><strong>vs Mailchimp:</strong> {{ oc.get('competitive_advantage_vs_mailchimp') }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ===== EMAIL / CONTENT BUILDER DEEP DIVE ===== -->
+  {% set ecb = brief.get('email_content_builder', {}) %}
+  {% if ecb %}
+  <div class="section-subheader"><h3><span style="color:#3fb950;">Email &amp; Content Builder</span></h3></div>
+  <div class="deep-dive accent-email">
+    <h4>Builder Capabilities</h4>
+    {% if ecb.get('editor_type') %}
+    <div class="field-row"><span class="field-label">Editor Type</span><span class="field-value">{{ ecb.get('editor_type') }}</span></div>
+    {% endif %}
+    {% if ecb.get('ai_content_features') %}
+    <div class="field-row"><span class="field-label">AI Content Features</span><span class="field-value">{{ ecb.get('ai_content_features') }}</span></div>
+    {% endif %}
+    {% if ecb.get('template_ecosystem') %}
+    <div class="field-row"><span class="field-label">Template Ecosystem</span><span class="field-value">{{ ecb.get('template_ecosystem') }}</span></div>
+    {% endif %}
+    {% if ecb.get('personalization_capabilities') %}
+    <div class="field-row"><span class="field-label">Personalization</span><span class="field-value">{{ ecb.get('personalization_capabilities') }}</span></div>
+    {% endif %}
+    {% if ecb.get('recent_updates') %}
+    <div class="field-row"><span class="field-label">Recent Updates</span><span class="field-value">{{ ecb.get('recent_updates') }}</span></div>
+    {% endif %}
+    {% if ecb.get('competitive_advantage_vs_mailchimp') %}
+    <div class="competitive-advantage"><strong>vs Mailchimp:</strong> {{ ecb.get('competitive_advantage_vs_mailchimp') }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ===== RISK ASSESSMENT ===== -->
+  {% if brief.get('risk_assessment') %}
+  <div class="risk-box">
+    <h3>Risk Assessment</h3>
+    <p>{{ brief.get('risk_assessment') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Analytics & AI Watch (legacy field) -->
+  {% set aiw = brief.get('analytics_ai_watch', {}) %}
+  {% if aiw and aiw.get('what_theyre_doing') %}
+  <div class="highlight-box">
+    <h3>Analytics &amp; AI Watch — What This Means for Mailchimp R&amp;A</h3>
+    <p>{{ aiw.get('what_theyre_doing', 'N/A') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Start / Stop / Continue (new location from start_stop_continue) -->
+  {% set ssc = brief.get('start_stop_continue', aiw) %}
+  {% if ssc %}
+  <div class="ssc-grid">
+    <div class="ssc-col ssc-start">
+      <h4>Start Doing</h4>
+      <ul>
+        {% for item in ssc.get('start_doing', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not ssc.get('start_doing') %}<li style="color:#484f58;">No items</li>{% endif %}
+      </ul>
+    </div>
+    <div class="ssc-col ssc-stop">
+      <h4>Stop Doing</h4>
+      <ul>
+        {% for item in ssc.get('stop_doing', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not ssc.get('stop_doing') %}<li style="color:#484f58;">No items</li>{% endif %}
+      </ul>
+    </div>
+    <div class="ssc-col ssc-continue">
+      <h4>Continue Doing</h4>
+      <ul>
+        {% for item in ssc.get('continue_doing', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not ssc.get('continue_doing') %}<li style="color:#484f58;">No items</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endfor %}
+
+  <!-- ===== SENTIMENT SECTION ===== -->
+  <div class="page-break"></div>
+
+  <div class="section-header">
+    <h2>Sentiment Dashboard</h2>
+  </div>
+
+  <!-- Sentiment scores side by side -->
+  <div class="sentiment-row">
+    {% for comp_key, sent in sentiments.items() %}
+    {% set accent_color = '#FF6B00' if 'klaviyo' in comp_key.lower() else '#FF7A59' %}
+    <div class="sentiment-card">
+      <div class="sentiment-label">{{ sent.get('competitor', comp_key) }}</div>
+      <div class="sentiment-score" style="color:{{ accent_color }};">
+        {{ "%.2f" | format(sent.get('sentiment_score', 0.0)) }}
+      </div>
+      <div class="sentiment-label">{{ sent.get('overall_sentiment', 'unknown') | upper }}</div>
+      {% set delta = sent.get('sentiment_delta_vs_last_week', 0.0) %}
+      <div class="{{ 'delta-up' if delta > 0 else ('delta-down' if delta < 0 else 'delta-flat') }}" style="margin-top:8px; font-family:'DM Mono',monospace; font-size:14px;">
+        {{ '+' if delta > 0 else '' }}{{ "%.2f" | format(delta) }} vs last week
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Per-competitor sentiment details -->
+  {% for comp_key, sent in sentiments.items() %}
+  {% set accent_class = 'badge-klaviyo' if 'klaviyo' in comp_key.lower() else 'badge-hubspot' %}
+  {% set accent_color = '#FF6B00' if 'klaviyo' in comp_key.lower() else '#FF7A59' %}
+
+  <div class="section-header" style="margin-top:32px;">
+    <span class="competitor-badge {{ accent_class }}">{{ sent.get('competitor', comp_key) }}</span>
+    <h2>Sentiment Trends</h2>
+  </div>
+
+  <!-- Love / Hate / Steady -->
+  <div class="ssc-grid">
+    <div class="ssc-col" style="border-color:#3fb950;">
+      <h4 style="color:#3fb950;">Top Loves</h4>
+      <ul>
+        {% for love in sent.get('top_loves', []) %}
+        <li><strong>{{ love.get('theme', '') }}</strong> ({{ love.get('trend', 'steady') }} {{ love.get('frequency', '') }})<br><em style="color:#6e7681;">"{{ love.get('example_quote', '') | truncate(120) }}"</em></li>
+        {% endfor %}
+        {% if not sent.get('top_loves') %}<li style="color:#484f58;">No data</li>{% endif %}
+      </ul>
+    </div>
+    <div class="ssc-col" style="border-color:#f85149;">
+      <h4 style="color:#f85149;">Top Hates</h4>
+      <ul>
+        {% for hate in sent.get('top_hates', []) %}
+        <li><strong>{{ hate.get('theme', '') }}</strong> ({{ hate.get('trend', 'steady') }} {{ hate.get('frequency', '') }})<br><em style="color:#6e7681;">"{{ hate.get('example_quote', '') | truncate(120) }}"</em></li>
+        {% endfor %}
+        {% if not sent.get('top_hates') %}<li style="color:#484f58;">No data</li>{% endif %}
+      </ul>
+    </div>
+    <div class="ssc-col" style="border-color:#8b949e;">
+      <h4 style="color:#8b949e;">Steady Issues</h4>
+      <ul>
+        {% for issue in sent.get('steady_issues', []) %}
+        <li><strong>{{ issue.get('issue', '') }}</strong> — {{ issue.get('how_long_present', 'unknown') }} ({{ issue.get('severity', 'N/A') }})</li>
+        {% endfor %}
+        {% if not sent.get('steady_issues') %}<li style="color:#484f58;">No data</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Analytics & Data Accuracy Sentiment -->
+  {% set ars = sent.get('analytics_reporting_sentiment', {}) %}
+  <div class="card-full">
+    <h3>Analytics &amp; Data Accuracy Deep Dive</h3>
+    <p>{{ ars.get('summary', 'No data available.') }}</p>
+    {% if ars.get('specific_complaints') %}
+    <p style="margin-top:12px; color:#f85149; font-weight:600;">Complaints:</p>
+    <ul>{% for c in ars.get('specific_complaints', []) %}<li>{{ c }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if ars.get('data_accuracy_issues') %}
+    <p style="margin-top:12px; color:#d29922; font-weight:600;">Data Accuracy Issues:</p>
+    <ul>{% for c in ars.get('data_accuracy_issues', []) %}<li>{{ c }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if ars.get('specific_praise') %}
+    <p style="margin-top:12px; color:#3fb950; font-weight:600;">Praise:</p>
+    <ul>{% for c in ars.get('specific_praise', []) %}<li>{{ c }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+
+  <!-- Omnichannel Sentiment (NEW) -->
+  {% set ocs = sent.get('omnichannel_sentiment', {}) %}
+  {% if ocs %}
+  <div class="card-full">
+    <h3 style="color:#58a6ff;">Omnichannel Sentiment</h3>
+    <p>{{ ocs.get('summary', 'No data available.') }}</p>
+    {% if ocs.get('sms_feedback') %}
+    <p style="margin-top:12px; font-weight:600; color:#58a6ff;">SMS Feedback:</p>
+    <p>{{ ocs.get('sms_feedback') }}</p>
+    {% endif %}
+    {% if ocs.get('cross_channel_complaints') %}
+    <p style="margin-top:12px; color:#f85149; font-weight:600;">Cross-Channel Complaints:</p>
+    <p>{{ ocs.get('cross_channel_complaints') }}</p>
+    {% endif %}
+    {% if ocs.get('channel_gaps_users_mention') %}
+    <p style="margin-top:12px; color:#d29922; font-weight:600;">Channel Gaps Users Mention:</p>
+    <p>{{ ocs.get('channel_gaps_users_mention') }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Email Builder Sentiment (NEW) -->
+  {% set ebs = sent.get('email_builder_sentiment', {}) %}
+  {% if ebs %}
+  <div class="card-full">
+    <h3 style="color:#3fb950;">Email Builder Sentiment</h3>
+    <p>{{ ebs.get('summary', 'No data available.') }}</p>
+    {% if ebs.get('editor_complaints') %}
+    <p style="margin-top:12px; color:#f85149; font-weight:600;">Editor Complaints:</p>
+    <p>{{ ebs.get('editor_complaints') }}</p>
+    {% endif %}
+    {% if ebs.get('editor_praise') %}
+    <p style="margin-top:12px; color:#3fb950; font-weight:600;">Editor Praise:</p>
+    <p>{{ ebs.get('editor_praise') }}</p>
+    {% endif %}
+    {% if ebs.get('template_feedback') %}
+    <p style="margin-top:12px; color:#58a6ff; font-weight:600;">Template Feedback:</p>
+    <p>{{ ebs.get('template_feedback') }}</p>
+    {% endif %}
+    {% if ebs.get('ai_content_feedback') %}
+    <p style="margin-top:12px; color:#a371f7; font-weight:600;">AI Content Feedback:</p>
+    <p>{{ ebs.get('ai_content_feedback') }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- AI Agent Signals -->
+  {% set ais = sent.get('ai_agent_sentiment', {}) %}
+  <div class="highlight-box">
+    <h3>AI Agent Signals</h3>
+    <p>{{ ais.get('summary', 'No data.') }}</p>
+    {% if ais.get('specific_complaints') %}
+    <p style="margin-top:10px; color:#f85149;">Complaints: {{ ais.get('specific_complaints', []) | join(' | ') }}</p>
+    {% endif %}
+    {% if ais.get('specific_praise') %}
+    <p style="margin-top:6px; color:#3fb950;">Praise: {{ ais.get('specific_praise', []) | join(' | ') }}</p>
+    {% endif %}
+  </div>
+
+  <!-- Churn Signals (NEW) -->
+  {% if sent.get('churn_signals') %}
+  <div class="churn-signals">
+    <h3>Churn Signals</h3>
+    <ul>
+      {% for signal in sent.get('churn_signals', []) %}
+      <li>{{ signal }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% endfor %}
+
+  <!-- Opportunity Gaps -->
+  <div class="opportunity-box">
+    <h3>Opportunity Gaps — Where Mailchimp Can Win</h3>
+    <ul>
+      {% for comp_key, sent in sentiments.items() %}
+        {% for signal in sent.get('opportunity_signals', []) %}
+        <li><strong>{{ sent.get('competitor', comp_key) }}:</strong> {{ signal }}</li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- ===== ANALYTICS LENS (CROSS-COMPETITOR) ===== -->
+  {% if analytics_lens %}
+  <div class="page-break"></div>
+  <div class="section-header">
+    <h2>Analytics &amp; AI Lens — Mailchimp R&amp;A</h2>
+  </div>
+
+  <!-- Executive Brief (NEW) -->
+  {% if analytics_lens.get('executive_brief') %}
+  <div class="exec-brief">
+    <h3>Executive Strategic Brief</h3>
+    <p>{{ analytics_lens.get('executive_brief') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Legacy cross-competitor summary -->
+  {% set ail = analytics_lens.get('analytics_ai_implications', {}) %}
+  {% if ail.get('summary') %}
+  <div class="card-full">
+    <h3>Cross-Competitor Analysis</h3>
+    <p>{{ ail.get('summary', 'N/A') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Analytics Reporting Landscape (NEW) -->
+  {% set arl = analytics_lens.get('analytics_reporting_landscape', {}) %}
+  {% if arl %}
+  <div class="landscape-card">
+    <h3><span style="color:#a371f7;">Analytics &amp; Reporting Landscape</span></h3>
+    {% if arl.get('summary') %}<p>{{ arl.get('summary') }}</p>{% endif %}
+    {% if arl.get('competitor_strengths') %}
+    <p style="margin-top:12px; font-weight:600; color:#3fb950;">Competitor Strengths:</p>
+    {% if arl.get('competitor_strengths') is string %}
+    <p>{{ arl.get('competitor_strengths') }}</p>
+    {% else %}
+    <ul>{% for s in arl.get('competitor_strengths', []) %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endif %}
+    {% if arl.get('competitor_weaknesses') %}
+    <p style="margin-top:12px; font-weight:600; color:#f85149;">Competitor Weaknesses:</p>
+    {% if arl.get('competitor_weaknesses') is string %}
+    <p>{{ arl.get('competitor_weaknesses') }}</p>
+    {% else %}
+    <ul>{% for s in arl.get('competitor_weaknesses', []) %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Omnichannel Landscape (NEW) -->
+  {% set ocl = analytics_lens.get('omnichannel_landscape', {}) %}
+  {% if ocl %}
+  <div class="landscape-card">
+    <h3><span style="color:#58a6ff;">Omnichannel Landscape</span></h3>
+    {% if ocl.get('summary') %}<p>{{ ocl.get('summary') }}</p>{% endif %}
+    {% if ocl.get('channel_comparison') %}
+    <p style="margin-top:12px; font-weight:600; color:#58a6ff;">Channel Comparison:</p>
+    {% if ocl.get('channel_comparison') is string %}
+    <p>{{ ocl.get('channel_comparison') }}</p>
+    {% else %}
+    <ul>{% for s in ocl.get('channel_comparison', []) %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Email Content Builder Landscape (NEW) -->
+  {% set ecbl = analytics_lens.get('email_content_builder_landscape', {}) %}
+  {% if ecbl %}
+  <div class="landscape-card">
+    <h3><span style="color:#3fb950;">Email &amp; Content Builder Landscape</span></h3>
+    {% if ecbl.get('summary') %}<p>{{ ecbl.get('summary') }}</p>{% endif %}
+    {% if ecbl.get('ai_content_comparison') %}
+    <p style="margin-top:12px; font-weight:600; color:#a371f7;">AI Content Comparison:</p>
+    {% if ecbl.get('ai_content_comparison') is string %}
+    <p>{{ ecbl.get('ai_content_comparison') }}</p>
+    {% else %}
+    <ul>{% for s in ecbl.get('ai_content_comparison', []) %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endif %}
+    {% if ecbl.get('editor_comparison') %}
+    <p style="margin-top:12px; font-weight:600; color:#3fb950;">Editor Comparison:</p>
+    {% if ecbl.get('editor_comparison') is string %}
+    <p>{{ ecbl.get('editor_comparison') }}</p>
+    {% else %}
+    <ul>{% for s in ecbl.get('editor_comparison', []) %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- AI Agent Landscape (NEW) -->
+  {% set aal = analytics_lens.get('ai_agent_landscape', {}) %}
+  {% if aal %}
+  <div class="highlight-box">
+    <h3>AI Agent Landscape</h3>
+    {% if aal.get('summary') %}<p>{{ aal.get('summary') }}</p>{% endif %}
+    {% if aal.get('biggest_ai_threat') %}
+    <p style="margin-top:12px; font-weight:600; color:#f85149;">Biggest AI Threat:</p>
+    <p>{{ aal.get('biggest_ai_threat') }}</p>
+    {% endif %}
+    {% if aal.get('ai_adoption_reality') %}
+    <p style="margin-top:12px; font-weight:600; color:#d29922;">AI Adoption Reality:</p>
+    <p>{{ aal.get('ai_adoption_reality') }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- 90-Day Priorities (NEW) -->
+  {% if analytics_lens.get('90_day_priorities') %}
+  <div class="priorities-list">
+    <h3>90-Day Priorities</h3>
+    <ol>
+      {% for priority in analytics_lens.get('90_day_priorities', []) %}
+      <li>{{ priority }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+  <!-- Risk Matrix (NEW) -->
+  {% set rm = analytics_lens.get('risk_matrix', {}) %}
+  {% if rm %}
+  <div class="section-subheader"><h3>Risk Matrix</h3></div>
+  <div class="risk-matrix">
+    <div class="risk-col risk-high">
+      <h4>High Risk</h4>
+      <ul>
+        {% for item in rm.get('high_risk', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not rm.get('high_risk') %}<li style="color:#484f58;">None identified</li>{% endif %}
+      </ul>
+    </div>
+    <div class="risk-col risk-medium">
+      <h4>Medium Risk</h4>
+      <ul>
+        {% for item in rm.get('medium_risk', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not rm.get('medium_risk') %}<li style="color:#484f58;">None identified</li>{% endif %}
+      </ul>
+    </div>
+    <div class="risk-col risk-low">
+      <h4>Low Risk</h4>
+      <ul>
+        {% for item in rm.get('low_risk', []) %}
+        <li>{{ item }}</li>
+        {% endfor %}
+        {% if not rm.get('low_risk') %}<li style="color:#484f58;">None identified</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Legacy SSC from analytics_lens -->
+  {% if analytics_lens.get('start_doing') or analytics_lens.get('stop_doing') or analytics_lens.get('continue_doing') %}
+  <div class="ssc-grid">
+    <div class="ssc-col ssc-start">
+      <h4>Start Doing</h4>
+      <ul>{% for item in analytics_lens.get('start_doing', []) %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    <div class="ssc-col ssc-stop">
+      <h4>Stop Doing</h4>
+      <ul>{% for item in analytics_lens.get('stop_doing', []) %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    <div class="ssc-col ssc-continue">
+      <h4>Continue Doing</h4>
+      <ul>{% for item in analytics_lens.get('continue_doing', []) %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="report-footer">
+    Generated by CI Agent &middot; {{ week_iso }} &middot; Mailchimp R&amp;A Intelligence
+  </div>
+
+</div>
+</body>
+</html>
